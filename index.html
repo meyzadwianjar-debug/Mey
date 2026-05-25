@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitLife - Kalkulator Makro & Penyusun Piring Sehat</title>
+    <!-- Memuat Tailwind CSS melalui CDN untuk keperluan preview -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            /* Menggunakan font Inter atau font sistem bawaan jika offline */
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        @media print {
+            body {
+                background-color: white !important;
+                color: black !important;
+            }
+            #input-section, #header-section, #cta-print-btn, #guide-box, .food-selector-ui, .no-print, #day-selector-container {
+                display: none !important;
+            }
+            #report-section {
+                width: 100% !important;
+                border: none !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .print-layout {
+                display: block !important;
+            }
+        }
+        
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 antialiased selection:bg-emerald-500 selection:text-white pb-24">
+
+    <header id="header-section" class="max-w-6xl mx-auto px-4 pt-8 pb-4 text-center">
+        <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-700 text-sm font-semibold rounded-full mb-3 border border-emerald-100 shadow-sm">
+            🌱 Premium Digital Product v3.0 - Offline Ready
+        </div>
+        <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight sm:text-5xl">
+            FitLife <span class="text-emerald-600">NutriCalc & MealBuilder</span>
+        </h1>
+        <p class="mt-3 text-lg text-slate-600 max-w-2xl mx-auto">
+            Aplikasi pintar kalkulator makronutrisi dan penjadwalan piring menu diet mingguan dengan indikator keseimbangan kalori instan.
+        </p>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 mt-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <div id="input-section" class="lg:col-span-4 bg-white p-6 sm:p-8 rounded-3xl shadow-xl shadow-slate-100 border border-slate-100">
+                <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                    <span class="p-1.5 bg-emerald-100 text-emerald-700 rounded-lg text-base">📋</span>
+                    Profil Fisik & Target
+                </h2>
+                
+                <div class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Jenis Kelamin</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="gender" value="male" checked class="peer sr-only" onchange="saveProfileAndCalculate()">
+                                <div class="p-3 text-center rounded-2xl border-2 border-slate-100 bg-slate-50 text-slate-700 font-semibold peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 transition-all">
+                                    Pria
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="gender" value="female" class="peer sr-only" onchange="saveProfileAndCalculate()">
+                                <div class="p-3 text-center rounded-2xl border-2 border-slate-100 bg-slate-50 text-slate-700 font-semibold peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 transition-all">
+                                    Wanita
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label for="weight" class="block text-xs font-bold text-slate-600 uppercase mb-1">Berat (Kg)</label>
+                            <input type="number" id="weight" value="65" oninput="saveProfileAndCalculate()" class="w-full px-3 py-3 border-2 border-slate-100 rounded-2xl bg-slate-50 font-bold focus:bg-white focus:border-emerald-500 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label for="height" class="block text-xs font-bold text-slate-600 uppercase mb-1">Tinggi (Cm)</label>
+                            <input type="number" id="height" value="170" oninput="saveProfileAndCalculate()" class="w-full px-3 py-3 border-2 border-slate-100 rounded-2xl bg-slate-50 font-bold focus:bg-white focus:border-emerald-500 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label for="age" class="block text-xs font-bold text-slate-600 uppercase mb-1">Usia (Thn)</label>
+                            <input type="number" id="age" value="25" oninput="saveProfileAndCalculate()" class="w-full px-3 py-3 border-2 border-slate-100 rounded-2xl bg-slate-50 font-bold focus:bg-white focus:border-emerald-500 outline-none transition-all">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="activity" class="block text-sm font-bold text-slate-700 mb-1.5">Tingkat Aktivitas Harian</label>
+                        <select id="activity" onchange="saveProfileAndCalculate()" class="w-full px-4 py-3.5 border-2 border-slate-100 rounded-2xl bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none transition-all font-medium text-slate-700">
+                            <option value="1.2">Banyak Duduk / Kurang Gerak</option>
+                            <option value="1.375">Olahraga Ringan (1-3 hari/minggu)</option>
+                            <option value="1.55">Olahraga Sedang (3-5 hari/minggu)</option>
+                            <option value="1.725">Olahraga Berat (6-7 hari/minggu)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="goal" class="block text-sm font-bold text-slate-700 mb-1.5">Target Utama Diet</label>
+                        <select id="goal" onchange="saveProfileAndCalculate()" class="w-full px-4 py-3.5 border-2 border-slate-100 rounded-2xl bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none transition-all font-medium text-slate-700">
+                            <option value="lose">📉 Turunkan Berat Badan (Bakar Lemak)</option>
+                            <option value="maintain">⚖️ Jaga Berat Badan (Tetap Stabil)</option>
+                            <option value="gain">📈 Naikkan Berat Badan (Tambah Otot)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div id="report-section" class="lg:col-span-8 bg-white p-6 sm:p-8 rounded-3xl shadow-xl shadow-slate-100 border border-slate-100">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-5 mb-6">
+                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <span class="p-1.5 bg-emerald-100 text-emerald-700 rounded-lg text-base">📊</span>
+                        Hasil Analisis Nutrisi
+                        <button onclick="openInfoModal()" class="w-6 h-6 inline-flex items-center justify-center text-xs font-bold rounded-full bg-slate-100 hover:bg-emerald-100 text-slate-500 hover:text-emerald-700 transition cursor-pointer no-print select-none" title="Pelajari bagaimana ini dihitung">
+                            ?
+                        </button>
+                    </h2>
+                    <button id="cta-print-btn" onclick="window.print()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition cursor-pointer flex items-center gap-1.5">
+                        🖨️ Cetak PDF
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white p-6 rounded-3xl shadow-lg shadow-emerald-100 text-center relative overflow-hidden">
+                        <div class="absolute -right-8 -top-8 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+                        <span class="text-xs font-bold uppercase tracking-widest text-emerald-100">Target Energi Harian Anda (TDEE)</span>
+                        <div class="mt-2 flex justify-center items-baseline gap-2">
+                            <span id="calories-out" class="text-4xl font-black tracking-tight">--</span>
+                            <span class="text-lg font-bold text-emerald-100">kkal / hari</span>
+                        </div>
+                    </div>
+                    
+                    <div id="piring-indicator" class="bg-slate-50 p-6 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold uppercase tracking-widest text-slate-500">Piring Terpilih (<span id="active-day-label" class="capitalize">Senin</span>)</span>
+                            <span id="status-badge" class="px-3 py-1 text-xs font-black rounded-full uppercase bg-yellow-100 text-yellow-800 flex items-center gap-1">
+                                ⚠️ Belum Diisi
+                            </span>
+                        </div>
+                        <div class="my-2 flex items-baseline gap-1.5">
+                            <span id="selected-calories" class="text-3xl font-black text-slate-800">0</span>
+                            <span class="text-xs font-bold text-slate-500">/ <span id="target-calories-limit">--</span> kkal</span>
+                        </div>
+                        <div class="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
+                            <div id="status-progress-bar" class="bg-yellow-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="font-bold text-slate-800 text-base mb-4">Target Makronutrisi Harian</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                    <div class="p-4 bg-sky-50 rounded-2xl border border-sky-100/50">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-bold text-sky-700">🍗 Protein</span>
+                            <span id="protein-pct" class="text-xs font-bold text-sky-500">--%</span>
+                        </div>
+                        <div class="flex justify-between items-baseline">
+                            <span id="protein-out" class="text-2xl font-extrabold text-sky-950">-- g</span>
+                            <span class="text-xs font-bold text-sky-600/70">Terpilih: <span id="selected-protein">0g</span></span>
+                        </div>
+                        <div class="w-full bg-sky-200/50 h-2 rounded-full mt-3 overflow-hidden">
+                            <div id="protein-bar" class="bg-sky-500 h-full rounded-full transition-all duration-500" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-amber-50 rounded-2xl border border-amber-100/50">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-bold text-amber-700">🍞 Karbohidrat</span>
+                            <span id="carbs-pct" class="text-xs font-bold text-amber-500">--%</span>
+                        </div>
+                        <div class="flex justify-between items-baseline">
+                            <span id="carbs-out" class="text-2xl font-extrabold text-amber-950">-- g</span>
+                            <span class="text-xs font-bold text-amber-600/70">Terpilih: <span id="selected-carbs">0g</span></span>
+                        </div>
+                        <div class="w-full bg-amber-200/50 h-2 rounded-full mt-3 overflow-hidden">
+                            <div id="carbs-bar" class="bg-amber-500 h-full rounded-full transition-all duration-500" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-rose-50 rounded-2xl border border-rose-100/50">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-bold text-rose-700">🥑 Lemak</span>
+                            <span id="fat-pct" class="text-xs font-bold text-rose-500">--%</span>
+                        </div>
+                        <div class="flex justify-between items-baseline">
+                            <span id="fat-out" class="text-2xl font-extrabold text-rose-950">-- g</span>
+                            <span class="text-xs font-bold text-rose-600/70">Terpilih: <span id="selected-fat">0g</span></span>
+                        </div>
+                        <div class="w-full bg-rose-200/50 h-2 rounded-full mt-3 overflow-hidden">
+                            <div id="fat-bar" class="bg-rose-500 h-full rounded-full transition-all duration-500" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="day-selector-container" class="mb-8 border-t border-slate-100 pt-6">
+                    <h3 class="font-extrabold text-slate-800 text-lg mb-3 flex items-center gap-2">
+                        📅 Jadwal Menu Mingguan Anda
+                    </h3>
+                    <div class="flex overflow-x-auto gap-2 pb-2 hide-scrollbar" id="weekly-tabs">
+                        <!-- Dimuat otomatis via JS -->
+                    </div>
+                </div>
+
+                <div id="selected-menu-summary" class="hidden border-2 border-emerald-100 bg-emerald-50/20 p-5 rounded-3xl mb-8">
+                    <div class="flex justify-between items-center border-b border-emerald-100/80 pb-3 mb-3">
+                        <h4 class="font-extrabold text-emerald-800 text-lg flex items-center gap-1.5">
+                            🍽️ Piring Hari <span class="capitalize" id="summary-day-label">Senin</span>
+                        </h4>
+                        <button onclick="clearAllSelections()" class="no-print text-xs font-bold text-rose-600 hover:text-rose-700 bg-white border border-rose-100 px-2.5 py-1 rounded-lg transition shadow-sm cursor-pointer">
+                            Hapus Piring
+                        </button>
+                    </div>
+                    <div id="summary-items" class="space-y-2 text-sm text-slate-700">
+                        <!-- Disisipkan dinamis via JS -->
+                    </div>
+                </div>
+
+                <div class="food-selector-ui">
+                    <h3 class="font-extrabold text-slate-800 text-lg mb-2 flex items-center gap-2">
+                        🍳 Susun Piring Mandiri
+                    </h3>
+                    <p class="text-slate-500 text-sm mb-6 leading-relaxed">
+                        Pilih hidangan di bawah ini dan sesuaikan porsinya menggunakan tombol <strong>+</strong> atau <strong>-</strong>. Data akan otomatis tersimpan ke hari (<strong id="instruction-day-label" class="capitalize text-emerald-600">Senin</strong>).
+                    </p>
+                    
+                    <div id="interactive-meal-builder" class="space-y-6">
+                        <!-- Grid Makanan Pagi, Siang, Sore, Malam dimuat dinamis -->
+                    </div>
+                </div>
+
+                <div id="guide-box" class="mt-8 p-4 bg-emerald-50 rounded-2xl border border-emerald-100/50 flex gap-3 text-sm text-emerald-800">
+                    <span class="text-base leading-none">💡</span>
+                    <p><strong>Tips Produk:</strong> Silakan pilih hidangan dan atur porsi hingga grafik berlabel hijau <strong>✔ SEIMBANG</strong>. Perubahan Anda tersimpan otomatis di browser secara permanen (Offline Save).</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="info-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print transition-all duration-300">
+        <div class="bg-white rounded-3xl max-w-xl w-full max-h-[85vh] overflow-y-auto p-6 sm:p-8 border border-slate-100 shadow-2xl relative">
+            <button onclick="closeInfoModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition flex items-center justify-center font-bold text-sm cursor-pointer shadow-sm" title="Tutup Menu">✕</button>
+
+            <h3 class="text-2xl font-extrabold text-slate-900 flex items-center gap-2 mb-5">
+                🔬 Metode Kalkulasi Medis
+            </h3>
+            
+            <div class="space-y-6 text-sm text-slate-600 leading-relaxed">
+                <div>
+                    <h4 class="font-bold text-slate-800 mb-1 flex items-center gap-1.5"><span class="text-emerald-500">1.</span> Target Energi Harian (TDEE)</h4>
+                    <p class="mb-2">Aplikasi ini menghitung <em>Total Daily Energy Expenditure</em> menggunakan standar global <strong>Mifflin-St Jeor (1990)</strong> yang direkomendasikan oleh ahli gizi:</p>
+                    <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs text-slate-700 space-y-1.5 mb-3 shadow-inner">
+                        <p>👨 Pria: (10 × kg) + (6.25 × cm) - (5 × usia) + 5</p>
+                        <p>👩 Wanita: (10 × kg) + (6.25 × cm) - (5 × usia) - 161</p>
+                    </div>
+                    <p>Hasil BMR dikalikan Tingkat Aktivitas (1.2 s/d 1.725). Jika target "Turun BB" (dikurangi 500 kkal), "Naik BB" (ditambah 400 kkal).</p>
+
+                    <div class="mt-4 p-4 bg-sky-50 border border-sky-100 rounded-2xl text-xs shadow-sm">
+                        <p class="font-bold text-sky-900 mb-1.5 flex items-center gap-1.5"><span class="text-sm leading-none">📝</span> Studi Kasus (Turun BB):</p>
+                        <p class="text-sky-700 italic mb-2">Pria, 65kg, 170cm, Usia 25, Aktivitas Ringan (1.375).</p>
+                        <ul class="space-y-1.5 text-sky-900 font-medium">
+                            <li class="flex justify-between border-b border-sky-100/50 pb-1"><span>BMR (Metabolisme Istirahat):</span> <strong>1.592,5 kkal</strong></li>
+                            <li class="flex justify-between border-b border-sky-100/50 pb-1"><span>Maintenance (TDEE Murni):</span> <strong>2.189 kkal</strong></li>
+                            <li class="flex justify-between pt-1"><span>Target Harian (Defisit 500):</span> <strong class="text-sky-950 bg-sky-200/60 px-1.5 py-0.5 rounded">1.689 kkal</strong></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <hr class="border-slate-100">
+
+                <div>
+                    <h4 class="font-bold text-slate-800 mb-2 flex items-center gap-1.5"><span class="text-emerald-500">2.</span> Target Makronutrisi</h4>
+                    <p class="mb-3">Total kalori harian dipecah ke tiga makronutrisi berdasar persentase diet sehat (1g Prot/Karbo = 4 kkal, 1g Lemak = 9 kkal):</p>
+                    <div class="overflow-hidden border border-slate-200 rounded-xl shadow-sm">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+                                <tr>
+                                    <th class="p-3">Target Diet</th>
+                                    <th class="p-3 text-sky-700 text-center">Protein</th>
+                                    <th class="p-3 text-amber-700 text-center">Karbohidrat</th>
+                                    <th class="p-3 text-rose-700 text-center">Lemak</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 font-medium">
+                                <tr class="hover:bg-slate-50/50 transition">
+                                    <td class="p-3 font-bold">📉 Turun BB</td>
+                                    <td class="p-3 text-sky-600 text-center">30%</td>
+                                    <td class="p-3 text-amber-600 text-center">40%</td>
+                                    <td class="p-3 text-rose-600 text-center">30%</td>
+                                </tr>
+                                <tr class="hover:bg-slate-50/50 transition">
+                                    <td class="p-3 font-bold">⚖️ Jaga BB</td>
+                                    <td class="p-3 text-sky-600 text-center">25%</td>
+                                    <td class="p-3 text-amber-600 text-center">45%</td>
+                                    <td class="p-3 text-rose-600 text-center">30%</td>
+                                </tr>
+                                <tr class="hover:bg-slate-50/50 transition">
+                                    <td class="p-3 font-bold">📈 Naik BB</td>
+                                    <td class="p-3 text-sky-600 text-center">25%</td>
+                                    <td class="p-3 text-amber-600 text-center">50%</td>
+                                    <td class="p-3 text-rose-600 text-center">25%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4 p-4 bg-orange-50 border border-orange-100 rounded-2xl text-xs shadow-sm">
+                        <p class="font-bold text-orange-900 mb-2 flex items-center gap-1.5"><span class="text-sm leading-none">🍱</span> Lanjutan Studi Kasus (1.689 kkal):</p>
+                        <ul class="space-y-2 text-orange-900 font-medium">
+                            <li class="flex justify-between border-b border-orange-200/50 pb-1">
+                                <span>Protein (30% / 4kkal):</span> 
+                                <strong class="bg-orange-200/60 px-1.5 py-0.5 rounded">127 gram</strong>
+                            </li>
+                            <li class="flex justify-between border-b border-orange-200/50 pb-1">
+                                <span>Karbohidrat (40% / 4kkal):</span> 
+                                <strong class="bg-orange-200/60 px-1.5 py-0.5 rounded">169 gram</strong>
+                            </li>
+                            <li class="flex justify-between pt-1">
+                                <span>Lemak (30% / 9kkal):</span> 
+                                <strong class="bg-orange-200/60 px-1.5 py-0.5 rounded">56 gram</strong>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Pangkalan Data Lengkap dengan Gramasi dan Satuan Terpisah
+        const foodDatabase = {
+            indonesia: {
+                pagi: [
+                    { id: 'p_n_1', nama: "Nasi Putih", satuan: "1 Centong", berat: 100, kalori: 130, protein: 3, karbo: 28, lemak: 0.2, kategori: "🍚 Nasi & Berat" },
+                    { id: 'p_n_2', nama: "Nasi Merah", satuan: "1 Centong", berat: 100, kalori: 110, protein: 2.5, karbo: 23, lemak: 0.8, kategori: "🍚 Nasi & Berat" },
+                    { id: 'p_n_4', nama: "Nasi Uduk", satuan: "1 Porsi Biasa", berat: 150, kalori: 260, protein: 4, karbo: 41, lemak: 8, kategori: "🍚 Nasi & Berat" },
+                    { id: 'p_n_15', nama: "Nasi Goreng Biasa", satuan: "1 Piring", berat: 250, kalori: 380, protein: 8, karbo: 45, lemak: 18, kategori: "🍚 Nasi & Berat" },
+                    { id: 'p_n_19', nama: "Nasi Telur Kecap", satuan: "1 Porsi", berat: 200, kalori: 310, protein: 10, karbo: 35, lemak: 14, kategori: "🍚 Nasi & Berat" },
+                    { id: 'p_b_1', nama: "Bubur Ayam", satuan: "1 Porsi", berat: 350, kalori: 372, protein: 12, karbo: 45, lemak: 15, kategori: "🍲 Bubur & Kuah" },
+                    { id: 'p_b_2', nama: "Bubur Kacang Hijau", satuan: "1 Mangkuk", berat: 200, kalori: 210, protein: 6, karbo: 38, lemak: 4, kategori: "🍲 Bubur & Kuah" },
+                    { id: 'p_m_4', nama: "Mie Goreng", satuan: "1 Porsi", berat: 200, kalori: 420, protein: 10, karbo: 50, lemak: 20, kategori: "🍜 Mie & Sejenis" },
+                    { id: 'p_m_8', nama: "Mie Shirataki Rebus", satuan: "1 Porsi", berat: 100, kalori: 20, protein: 0.5, karbo: 4, lemak: 0, kategori: "🍜 Mie & Sejenis" },
+                    { id: 'p_pr_1', nama: "Telur Rebus", satuan: "1 Butir", berat: 50, kalori: 75, protein: 6.5, karbo: 0.5, lemak: 5, kategori: "🍳 Protein Tinggi" },
+                    { id: 'p_pr_2', nama: "Telur Dadar (+ Minyak)", satuan: "1 Butir", berat: 55, kalori: 110, protein: 6.5, karbo: 1, lemak: 9, kategori: "🍳 Protein Tinggi" },
+                    { id: 'p_pr_6', nama: "Tempe Goreng", satuan: "1 Potong", berat: 50, kalori: 115, protein: 8, karbo: 6, lemak: 7, kategori: "🍳 Protein Tinggi" },
+                    { id: 'p_pr_9', nama: "Tahu Goreng", satuan: "1 Potong", berat: 50, kalori: 70, protein: 4, karbo: 3, lemak: 5, kategori: "🍳 Protein Tinggi" },
+                    { id: 'p_r_1', nama: "Roti Gandum", satuan: "1 Lembar", berat: 30, kalori: 75, protein: 3, karbo: 13, lemak: 1, kategori: "🍞 Roti & Modern" },
+                    { id: 'p_r_6', nama: "Oatmeal (Rebus Air)", satuan: "1 Mangkuk", berat: 200, kalori: 150, protein: 5, karbo: 27, lemak: 2.5, kategori: "🍞 Roti & Modern" },
+                    { id: 'p_j_1', nama: "Klepon", satuan: "3 Butir", berat: 50, kalori: 110, protein: 1, karbo: 22, lemak: 2, kategori: "🍡 Jajanan Pasar" },
+                    { id: 'p_j_10', nama: "Risoles Sayur", satuan: "1 Buah", berat: 60, kalori: 120, protein: 2, karbo: 12, lemak: 7, kategori: "🍡 Jajanan Pasar" },
+                    { id: 'p_bh_1', nama: "Pisang", satuan: "1 Buah Sedang", berat: 100, kalori: 105, protein: 1.3, karbo: 27, lemak: 0.3, kategori: "🍌 Buah-buahan" },
+                    { id: 'p_bh_3', nama: "Apel", satuan: "1 Buah Sedang", berat: 150, kalori: 95, protein: 0.5, karbo: 25, lemak: 0.3, kategori: "🍌 Buah-buahan" }
+                ],
+                siang: [
+                    { id: 's_k_1', nama: "Nasi Putih", satuan: "1 Centong", berat: 100, kalori: 130, protein: 3, karbo: 28, lemak: 0.2, kategori: "🍚 Nasi & Karbo" },
+                    { id: 's_k_2', nama: "Nasi Merah", satuan: "1 Centong", berat: 100, kalori: 110, protein: 2.5, karbo: 23, lemak: 0.8, kategori: "🍚 Nasi & Karbo" },
+                    { id: 's_k_5', nama: "Kentang Rebus", satuan: "1 Buah", berat: 150, kalori: 130, protein: 3, karbo: 30, lemak: 0.2, kategori: "🍚 Nasi & Karbo" },
+                    { id: 's_ph_1', nama: "Dada Ayam Bakar", satuan: "1 Potong", berat: 120, kalori: 165, protein: 28, karbo: 5, lemak: 3.5, kategori: "🍗 Protein Hewani" },
+                    { id: 's_ph_2', nama: "Ayam Panggang", satuan: "1 Potong", berat: 100, kalori: 190, protein: 24, karbo: 0, lemak: 10, kategori: "🍗 Protein Hewani" },
+                    { id: 's_ph_6', nama: "Sate Ayam (Tanpa Kulit)", satuan: "5 Tusuk", berat: 100, kalori: 150, protein: 22, karbo: 3, lemak: 5.5, kategori: "🍗 Protein Hewani" },
+                    { id: 's_ph_9', nama: "Ikan Kembung Bakar", satuan: "1 Ekor", berat: 120, kalori: 180, protein: 21, karbo: 0, lemak: 10, kategori: "🍗 Protein Hewani" },
+                    { id: 's_ph_15', nama: "Rendang Daging", satuan: "1 Potong", berat: 50, kalori: 195, protein: 18, karbo: 4, lemak: 11, kategori: "🍗 Protein Hewani" },
+                    { id: 's_ln_1', nama: "Tempe Goreng", satuan: "1 Potong", berat: 50, kalori: 115, protein: 8, karbo: 6, lemak: 7, kategori: "🌱 Lauk Nabati" },
+                    { id: 's_ln_3', nama: "Tempe Orek", satuan: "1 Sdk Sayur", berat: 50, kalori: 150, protein: 8, karbo: 14, lemak: 8, kategori: "🌱 Lauk Nabati" },
+                    { id: 's_ln_5', nama: "Tahu Kukus", satuan: "1 Potong", berat: 50, kalori: 40, protein: 4, karbo: 2, lemak: 2, kategori: "🌱 Lauk Nabati" },
+                    { id: 's_sy_1', nama: "Sayur Asem", satuan: "1 Mangkuk", berat: 250, kalori: 80, protein: 2, karbo: 12, lemak: 2, kategori: "🥬 Sayur & Sampingan" },
+                    { id: 's_sy_2', nama: "Sayur Bayam", satuan: "1 Mangkuk", berat: 200, kalori: 40, protein: 3, karbo: 6, lemak: 0.5, kategori: "🥬 Sayur & Sampingan" },
+                    { id: 's_sy_4', nama: "Tumis Kangkung", satuan: "1 Piring", berat: 150, kalori: 90, protein: 3, karbo: 8, lemak: 5, kategori: "🥬 Sayur & Sampingan" },
+                    { id: 's_sy_9', nama: "Gado-Gado (Saus Kacang)", satuan: "1 Porsi", berat: 250, kalori: 300, protein: 14, karbo: 25, lemak: 18, kategori: "🥬 Sayur & Sampingan" },
+                    { id: 's_mp_1', nama: "Soto Ayam", satuan: "1 Mangkuk", berat: 250, kalori: 150, protein: 12, karbo: 8, lemak: 7, kategori: "🍜 Menu Siang Populer" },
+                    { id: 's_mp_2', nama: "Bakso", satuan: "1 Mangkuk", berat: 300, kalori: 300, protein: 15, karbo: 20, lemak: 18, kategori: "🍜 Menu Siang Populer" }
+                ],
+                sore: [
+                    { id: 'so_bh_1', nama: "Pisang", satuan: "1 Buah", berat: 100, kalori: 105, protein: 1.3, karbo: 27, lemak: 0.3, kategori: "🍌 Buah & Snack Sehat" },
+                    { id: 'so_bh_2', nama: "Apel", satuan: "1 Buah", berat: 150, kalori: 95, protein: 0.5, karbo: 25, lemak: 0.3, kategori: "🍌 Buah & Snack Sehat" },
+                    { id: 'so_bh_5', nama: "Pepaya", satuan: "1 Potong", berat: 150, kalori: 55, protein: 0.8, karbo: 14, lemak: 0.2, kategori: "🍌 Buah & Snack Sehat" },
+                    { id: 'so_pr_1', nama: "Kacang Tanah Rebus", satuan: "1 Genggam", berat: 50, kalori: 150, protein: 6, karbo: 9, lemak: 10, kategori: "🥜 Snack Tinggi Protein" },
+                    { id: 'so_pr_3', nama: "Greek Yogurt", satuan: "1 Cup", berat: 150, kalori: 100, protein: 15, karbo: 4, lemak: 0, kategori: "🥜 Snack Tinggi Protein" },
+                    { id: 'so_pr_5', nama: "Telur Rebus", satuan: "1 Butir", berat: 50, kalori: 75, protein: 6.5, karbo: 0.5, lemak: 5, kategori: "🥜 Snack Tinggi Protein" },
+                    { id: 'so_tr_1', nama: "Pisang Goreng", satuan: "1 Buah", berat: 70, kalori: 140, protein: 1.5, karbo: 20, lemak: 7, kategori: "🍞 Snack Tradisional" },
+                    { id: 'so_tr_4', nama: "Risoles Sayur", satuan: "1 Buah", berat: 60, kalori: 120, protein: 2, karbo: 12, lemak: 7, kategori: "🍞 Snack Tradisional" }
+                ],
+                malam: [
+                    { id: 'm_k_1', nama: "Nasi Merah", satuan: "1 Centong", berat: 100, kalori: 110, protein: 2.5, karbo: 23, lemak: 0.8, kategori: "🍚 Karbohidrat Dinner" },
+                    { id: 'm_k_2', nama: "Nasi Putih", satuan: "1 Centong", berat: 100, kalori: 130, protein: 3, karbo: 28, lemak: 0.2, kategori: "🍚 Karbohidrat Dinner" },
+                    { id: 'm_k_6', nama: "Oatmeal", satuan: "1 Porsi", berat: 40, kalori: 150, protein: 5, karbo: 27, lemak: 2.5, kategori: "🍚 Karbohidrat Dinner" },
+                    { id: 'm_pr_1', nama: "Ikan Kembung Kukus", satuan: "1 Ekor", berat: 100, kalori: 160, protein: 19, karbo: 0, lemak: 9, kategori: "🐟 Protein Dinner Ringan" },
+                    { id: 'm_pr_5', nama: "Dada Ayam Rebus", satuan: "1 Potong", berat: 100, kalori: 165, protein: 31, karbo: 0, lemak: 3.5, kategori: "🐟 Protein Dinner Ringan" },
+                    { id: 'm_pr_7', nama: "Telur Rebus", satuan: "1 Butir", berat: 50, kalori: 75, protein: 6.5, karbo: 0.5, lemak: 5, kategori: "🐟 Protein Dinner Ringan" },
+                    { id: 'm_pn_1', nama: "Pepes Tahu", satuan: "1 Bungkus", berat: 100, kalori: 60, protein: 5, karbo: 4, lemak: 3, kategori: "🌱 Protein Nabati Dinner" },
+                    { id: 'm_pn_4', nama: "Tempe Panggang", satuan: "1 Potong", berat: 50, kalori: 110, protein: 8, karbo: 5, lemak: 6, kategori: "🌱 Protein Nabati Dinner" },
+                    { id: 'm_sy_1', nama: "Tumis Kangkung", satuan: "1 Piring", berat: 150, kalori: 90, protein: 3, karbo: 8, lemak: 5, kategori: "🥬 Sayuran Dinner" },
+                    { id: 'm_sy_5', nama: "Sayur Bening", satuan: "1 Mangkuk", berat: 200, kalori: 40, protein: 3, karbo: 6, lemak: 0.5, kategori: "🥬 Sayuran Dinner" }
+                ]
+            }
+        };
+
+        const DAYS = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu'];
+        let activeDay = 'senin'; 
+        let currentTargetCalories = 1500; 
+        
+        // Struktur penyimpanan kini berupa Objek Key-Value (ID_Makanan : Kuantitas_Porsi)
+        let weeklySchedule = {
+            senin: {}, selasa: {}, rabu: {}, kamis: {}, jumat: {}, sabtu: {}, minggu: {}
+        };
+
+        const ITEMS_PER_PAGE = 8;
+        let uiState = {
+            pagi: { category: 'Semua', page: 1, search: '' },
+            siang: { category: 'Semua', page: 1, search: '' },
+            sore: { category: 'Semua', page: 1, search: '' },
+            malam: { category: 'Semua', page: 1, search: '' }
+        };
+
+        function loadFromLocalStorage() {
+            try {
+                // Memuat Jadwal Makanan Mingguan
+                const savedSchedule = localStorage.getItem('fitlife_schedule_v3');
+                if (savedSchedule) {
+                    weeklySchedule = JSON.parse(savedSchedule);
+                } else {
+                    // Migrasi dari versi lama jika ada (Array ke Object)
+                    const oldSchedule = localStorage.getItem('fitlife_schedule');
+                    if (oldSchedule) {
+                        let parsedOld = JSON.parse(oldSchedule);
+                        if (Array.isArray(parsedOld.senin)) {
+                            for (let day of DAYS) {
+                                if (parsedOld[day]) {
+                                    parsedOld[day].forEach(id => {
+                                        weeklySchedule[day][id] = 1; // Default konversi 1 porsi
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Memuat Profil Fisik Input
+                const savedProfile = localStorage.getItem('fitlife_profile');
+                if (savedProfile) {
+                    const profile = JSON.parse(savedProfile);
+                    document.getElementById('weight').value = profile.weight;
+                    document.getElementById('height').value = profile.height;
+                    document.getElementById('age').value = profile.age;
+                    document.getElementById('activity').value = profile.activity;
+                    document.getElementById('goal').value = profile.goal;
+                    
+                    const genderRadios = document.getElementsByName('gender');
+                    for (let i = 0; i < genderRadios.length; i++) {
+                        if (genderRadios[i].value === profile.gender) {
+                            genderRadios[i].checked = true;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log("Gagal memuat data lokal", e);
+            }
+        }
+
+        function saveProfileAndCalculate() {
+            const profile = {
+                gender: document.querySelector('input[name="gender"]:checked').value,
+                weight: document.getElementById('weight').value,
+                height: document.getElementById('height').value,
+                age: document.getElementById('age').value,
+                activity: document.getElementById('activity').value,
+                goal: document.getElementById('goal').value
+            };
+            localStorage.setItem('fitlife_profile', JSON.stringify(profile));
+            calculateMacros();
+        }
+
+        function saveScheduleToLocal() {
+            localStorage.setItem('fitlife_schedule_v3', JSON.stringify(weeklySchedule));
+        }
+
+        function calculateMacros() {
+            const gender = document.querySelector('input[name="gender"]:checked').value;
+            const weight = parseFloat(document.getElementById('weight').value);
+            const height = parseFloat(document.getElementById('height').value);
+            const age = parseFloat(document.getElementById('age').value);
+            const activity = parseFloat(document.getElementById('activity').value);
+            const goal = document.getElementById('goal').value;
+
+            if (isNaN(weight) || isNaN(height) || isNaN(age)) return; 
+
+            // 1. Kalkulasi BMR (Mifflin-St Jeor)
+            let bmr = (gender === 'male') 
+                ? (10 * weight) + (6.25 * height) - (5 * age) + 5
+                : (10 * weight) + (6.25 * height) - (5 * age) - 161;
+
+            let tdee = bmr * activity;
+
+            // 2. Penyesuaian Target
+            if (goal === 'lose') {
+                tdee -= 500; 
+                if (tdee < 1200) tdee = 1200; // Batas minimal kalori aman
+            } else if (goal === 'gain') {
+                tdee += 400; 
+            }
+            const totalCalories = Math.round(tdee);
+            currentTargetCalories = totalCalories;
+
+            // 3. Distribusi Makro Persentase yang Seimbang
+            let p_pct, c_pct, f_pct;
+            if (goal === 'lose') {
+                p_pct = 30; c_pct = 40; f_pct = 30;
+            } else if (goal === 'gain') {
+                p_pct = 25; c_pct = 50; f_pct = 25;
+            } else {
+                p_pct = 25; c_pct = 45; f_pct = 30;
+            }
+
+            // 4. Konversi Persentase ke Gramasi
+            const p_g = Math.round((totalCalories * (p_pct / 100)) / 4);
+            const c_g = Math.round((totalCalories * (c_pct / 100)) / 4);
+            const f_g = Math.round((totalCalories * (f_pct / 100)) / 9);
+
+            // Update Antarmuka UI (TDEE & Bar)
+            document.getElementById('calories-out').innerText = totalCalories.toLocaleString('id-ID');
+            document.getElementById('target-calories-limit').innerText = totalCalories.toLocaleString('id-ID');
+            
+            document.getElementById('protein-out').innerText = p_g + ' g';
+            document.getElementById('protein-pct').innerText = p_pct + '%';
+            document.getElementById('protein-bar').style.width = p_pct + '%';
+
+            document.getElementById('carbs-out').innerText = c_g + ' g';
+            document.getElementById('carbs-pct').innerText = c_pct + '%';
+            document.getElementById('carbs-bar').style.width = c_pct + '%';
+
+            document.getElementById('fat-out').innerText = f_g + ' g';
+            document.getElementById('fat-pct').innerText = f_pct + '%';
+            document.getElementById('fat-bar').style.width = f_pct + '%';
+
+            renderDaySelector();
+            renderMealBuilder();
+            updateSelectionStats();
+        }
+
+        function renderDaySelector() {
+            const container = document.getElementById('weekly-tabs');
+            container.innerHTML = '';
+
+            const dayNames = {
+                'senin': 'Senin', 'selasa': 'Selasa', 'rabu': 'Rabu', 
+                'kamis': 'Kamis', 'jumat': 'Jumat', 'sabtu': 'Sabtu', 'minggu': 'Minggu'
+            };
+
+            DAYS.forEach(day => {
+                const isSelected = day === activeDay;
+                const activeClasses = isSelected 
+                    ? 'bg-emerald-600 text-white font-bold shadow-md ring-2 ring-emerald-200' 
+                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 font-medium';
+                
+                // Cek indikator jika hari itu ada makanan (Object keys)
+                const hasFood = Object.keys(weeklySchedule[day]).length > 0;
+                let indicator = hasFood ? `<span class="ml-1 text-[10px] ${isSelected ? 'text-emerald-100' : 'text-emerald-500'}">✔</span>` : '';
+
+                const btn = document.createElement('button');
+                btn.className = `px-5 py-2.5 rounded-xl transition-all duration-200 cursor-pointer text-sm min-w-[90px] ${activeClasses}`;
+                btn.innerHTML = `${dayNames[day]} ${indicator}`;
+                btn.onclick = () => changeDay(day);
+                
+                container.appendChild(btn);
+            });
+        }
+
+        function changeDay(newDay) {
+            activeDay = newDay;
+            // Update teks penunjuk UI
+            document.getElementById('active-day-label').innerText = newDay;
+            document.getElementById('summary-day-label').innerText = newDay;
+            document.getElementById('instruction-day-label').innerText = newDay;
+            
+            renderDaySelector(); 
+            renderMealBuilder(); // Render list makanan sesuai status hari aktif
+            updateSelectionStats();
+        }
+
+        function renderMealBuilder() {
+            const container = document.getElementById('interactive-meal-builder');
+            container.innerHTML = ''; 
+
+            const sections = [
+                { title: "🌅 Hidangan Pagi (Breakfast)", key: 'pagi' },
+                { title: "☀️ Hidangan Siang (Lunch)", key: 'siang' },
+                { title: "☕ Selingan Sore (Snack)", key: 'sore' },
+                { title: "🌙 Hidangan Malam (Dinner)", key: 'malam' }
+            ];
+
+            sections.forEach(section => {
+                const foods = foodDatabase['indonesia'][section.key];
+                if (!foods || foods.length === 0) return;
+                
+                const categories = [...new Set(foods.map(f => f.kategori).filter(Boolean))];
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = "bg-slate-50 border border-slate-100 rounded-2xl p-4 transition-all duration-300";
+                
+                let sectionHtml = `
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                        <h4 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">${section.title}</h4>
+                        <div class="relative w-full sm:w-64">
+                            <input type="text" placeholder="🔍 Cari hidangan..." oninput="handleSearch('${section.key}', this.value)" class="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white text-slate-700 placeholder:text-slate-400 shadow-sm">
+                        </div>
+                    </div>
+                `;
+
+                if (categories.length > 0) {
+                    sectionHtml += `<div class="flex overflow-x-auto gap-2 pb-3 mb-3 border-b border-slate-200 hide-scrollbar" id="tab-container-${section.key}">`;
+                    sectionHtml += `<button onclick="filterCategory('${section.key}', 'Semua')" id="btn-cat-${section.key}-Semua" class="cat-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-emerald-500 text-white shadow-sm transition">Semua</button>`;
+                    categories.forEach(cat => {
+                        const safeCatId = cat.replace(/[^a-zA-Z0-9]/g, '_');
+                        sectionHtml += `<button onclick="filterCategory('${section.key}', '${cat}')" id="btn-cat-${section.key}-${safeCatId}" class="cat-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50 hover:text-emerald-700 transition cursor-pointer">${cat}</button>`;
+                    });
+                    sectionHtml += `</div>`;
+                }
+
+                sectionHtml += `<div id="dynamic-grid-${section.key}"></div>`;
+                sectionDiv.innerHTML = sectionHtml;
+                container.appendChild(sectionDiv);
+                updateFoodDisplay(section.key);
+            });
+        }
+
+        function updateFoodDisplay(sectionKey) {
+            let foods = foodDatabase['indonesia'][sectionKey];
+            if (!foods) return;
+            const state = uiState[sectionKey];
+
+            // Sistem Filter dan Search
+            if (state.category !== 'Semua') {
+                foods = foods.filter(f => f.kategori === state.category);
+            }
+            if (state.search.trim() !== '') {
+                const query = state.search.toLowerCase();
+                foods = foods.filter(f => f.nama.toLowerCase().includes(query));
+            }
+
+            // Pagination
+            const totalItems = foods.length;
+            const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+            if (state.page > totalPages && totalPages > 0) state.page = totalPages;
+            if (totalPages === 0) state.page = 1;
+
+            const startIndex = (state.page - 1) * ITEMS_PER_PAGE;
+            const paginatedFoods = foods.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+            const container = document.getElementById(`dynamic-grid-${sectionKey}`);
+            if (!container) return;
+
+            let html = '';
+            if (paginatedFoods.length === 0) {
+                // Typo Fixed: Makanan tidak ditemukan
+                html = `<div class="text-center py-6 text-slate-400 text-sm font-medium border-2 border-dashed border-slate-200 rounded-xl bg-white">Makanan tidak ditemukan. Coba kata kunci lain.</div>`;
+            } else {
+                html += `<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-1 min-h-[200px]">`;
+                paginatedFoods.forEach(food => {
+                    // Cek di Object weeklySchedule
+                    const isChecked = weeklySchedule[activeDay].hasOwnProperty(food.id);
+                    const qty = isChecked ? weeklySchedule[activeDay][food.id] : 1; // Default render
+
+                    html += `
+                        <div class="relative flex flex-col p-3 bg-white border-2 ${isChecked ? 'border-emerald-300 bg-emerald-50/10' : 'border-slate-100'} rounded-xl hover:border-emerald-300 transition-all h-fit group">
+                            <label class="flex items-start gap-3 cursor-pointer select-none w-full">
+                                <input type="checkbox" id="chk-${activeDay}-${food.id}" value="${food.id}" onchange="toggleFood('${food.id}')" ${isChecked ? 'checked' : ''} class="mt-1 accent-emerald-600 rounded flex-shrink-0 w-4 h-4 cursor-pointer">
+                                <div class="flex-1 w-full overflow-hidden">
+                                    <div class="flex flex-wrap items-center gap-1.5 mb-0.5">
+                                        <p class="text-sm font-semibold ${isChecked ? 'text-emerald-800' : 'text-slate-700'} group-hover:text-emerald-800 transition leading-tight truncate max-w-full">${food.nama}</p>
+                                        <span class="px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded text-[10px] font-medium border border-slate-200 whitespace-nowrap">${food.satuan}</span>
+                                    </div>
+                                    <div class="flex flex-wrap gap-1.5 mt-1.5 text-[10px] sm:text-[11px] font-bold">
+                                        <span class="px-1.5 py-0.5 bg-slate-50 text-slate-500 rounded-md border border-slate-100">⚖️ ${food.berat}g</span>
+                                        <span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded-md">🔥 ${food.kalori} Kkal</span>
+                                        <span class="px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded-md">P: ${food.protein}g</span>
+                                        <span class="px-1.5 py-0.5 bg-amber-50 text-amber-800 rounded-md">K: ${food.karbo}g</span>
+                                        <span class="px-1.5 py-0.5 bg-rose-50 text-rose-700 rounded-md">L: ${food.lemak}g</span>
+                                    </div>
+                                </div>
+                            </label>
+                            
+                            <!-- Kontrol Multiplikator Kuantitas Muncul Jika Dicentang -->
+                            ${isChecked ? `
+                            <div class="mt-3 pt-3 border-t border-emerald-100 flex items-center justify-between animate-fade-in no-print">
+                                <span class="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-1 rounded-md">Atur Jumlah Porsi</span>
+                                <div class="flex items-center gap-2 bg-white rounded-lg p-0.5 border border-emerald-200 shadow-sm">
+                                    <button type="button" onclick="event.preventDefault(); updateQty('${food.id}', -0.5)" class="w-7 h-7 flex items-center justify-center rounded bg-slate-50 text-slate-600 hover:bg-rose-100 hover:text-rose-700 font-black border border-slate-200 transition-colors cursor-pointer select-none">-</button>
+                                    <span class="text-sm font-black text-slate-800 w-8 text-center select-none">${qty}</span>
+                                    <button type="button" onclick="event.preventDefault(); updateQty('${food.id}', 0.5)" class="w-7 h-7 flex items-center justify-center rounded bg-emerald-500 text-white hover:bg-emerald-600 font-black shadow-sm transition-colors cursor-pointer select-none">+</button>
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            if (totalPages > 1) {
+                html += `<div class="flex flex-wrap items-center justify-center gap-1.5 mt-4 pt-3 border-t border-slate-200">`;
+                for (let i = 1; i <= totalPages; i++) {
+                    const activeClass = i === state.page 
+                        ? "bg-emerald-600 text-white font-bold border-emerald-600 shadow-sm transform scale-105" 
+                        : "bg-white text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 border-slate-200";
+                    html += `<button onclick="changePage('${sectionKey}', ${i})" class="w-8 h-8 rounded-lg border flex items-center justify-center text-xs transition-all cursor-pointer ${activeClass}">${i}</button>`;
+                }
+                html += `</div>`;
+            }
+            container.innerHTML = html;
+            updateCategoryStyles(sectionKey);
+        }
+
+        function handleSearch(sectionKey, query) { uiState[sectionKey].search = query; uiState[sectionKey].page = 1; updateFoodDisplay(sectionKey); }
+        function filterCategory(sectionKey, category) { uiState[sectionKey].category = category; uiState[sectionKey].page = 1; updateFoodDisplay(sectionKey); }
+        function changePage(sectionKey, page) { uiState[sectionKey].page = page; updateFoodDisplay(sectionKey); }
+
+        function updateCategoryStyles(sectionKey) {
+            const tabContainer = document.getElementById(`tab-container-${sectionKey}`);
+            if (!tabContainer) return;
+            const buttons = tabContainer.querySelectorAll('button');
+            buttons.forEach(btn => btn.className = "cat-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50 hover:text-emerald-700 transition cursor-pointer");
+            const category = uiState[sectionKey].category;
+            const safeCatId = category === 'Semua' ? 'Semua' : category.replace(/[^a-zA-Z0-9]/g, '_');
+            const activeBtn = document.getElementById(`btn-cat-${sectionKey}-${safeCatId}`);
+            if (activeBtn) activeBtn.className = "cat-btn px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap bg-emerald-500 text-white shadow-sm transition cursor-pointer";
+        }
+
+        function toggleFood(foodId) {
+            if (weeklySchedule[activeDay].hasOwnProperty(foodId)) {
+                delete weeklySchedule[activeDay][foodId]; // Hapus jika di-uncheck
+            } else {
+                weeklySchedule[activeDay][foodId] = 1; // Tambah dengan default 1 porsi
+            }
+            saveScheduleToLocal();
+            updateSelectionStats();
+            renderDaySelector(); 
+            // Re-render UI spesifik agar tidak hilang search bar/pagination
+            ['pagi', 'siang', 'sore', 'malam'].forEach(sec => updateFoodDisplay(sec)); 
+        }
+
+        function updateQty(foodId, delta) {
+            if (!weeklySchedule[activeDay].hasOwnProperty(foodId)) return;
+
+            let currentQty = weeklySchedule[activeDay][foodId];
+            let newQty = currentQty + delta;
+            
+            // Batas minimal porsi adalah 0.5
+            if (newQty < 0.5) newQty = 0.5;
+
+            weeklySchedule[activeDay][foodId] = newQty;
+            
+            saveScheduleToLocal();
+            updateSelectionStats();
+            // Re-render display to show updated number
+            ['pagi', 'siang', 'sore', 'malam'].forEach(sec => updateFoodDisplay(sec)); 
+        }
+
+        function clearAllSelections() {
+            weeklySchedule[activeDay] = {}; // Reset object kosong
+            saveScheduleToLocal();
+            renderDaySelector();
+            ['pagi', 'siang', 'sore', 'malam'].forEach(sec => updateFoodDisplay(sec)); 
+            updateSelectionStats();
+        }
+
+        function updateSelectionStats() {
+            let totalCal = 0, totalProt = 0, totalCarb = 0, totalFat = 0;
+            const currentDayItems = weeklySchedule[activeDay]; // Object { 'id' : qty }
+            const currentDayIds = Object.keys(currentDayItems);
+            
+            const summaryContainer = document.getElementById('summary-items');
+            const summaryBox = document.getElementById('selected-menu-summary');
+            summaryContainer.innerHTML = '';
+
+            if (currentDayIds.length > 0) {
+                summaryBox.classList.remove('hidden');
+                
+                currentDayIds.forEach(id => {
+                    let foundFood = null;
+                    const categories = ['pagi', 'siang', 'sore', 'malam'];
+                    for (const cat of categories) {
+                        const item = foodDatabase['indonesia'][cat].find(f => f.id === id);
+                        if (item) { foundFood = { ...item, waktu: cat }; break; }
+                    }
+
+                    if (foundFood) {
+                        const qty = currentDayItems[id]; // Ambil multiplier porsi
+                        
+                        // Perhitungan Multiplikasi Porsi
+                        const calcCal = foundFood.kalori * qty;
+                        const calcProt = foundFood.protein * qty;
+                        const calcCarb = foundFood.karbo * qty;
+                        const calcFat = foundFood.lemak * qty;
+
+                        totalCal += calcCal;
+                        totalProt += calcProt;
+                        totalCarb += calcCarb;
+                        totalFat += calcFat;
+
+                        const summaryRow = document.createElement('div');
+                        summaryRow.className = 'flex justify-between items-center bg-white px-3 py-2.5 rounded-xl shadow-sm border border-slate-100';
+                        summaryRow.innerHTML = `
+                            <div class="flex items-start gap-2.5">
+                                <span class="capitalize text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md mt-0.5">${foundFood.waktu}</span>
+                                <div class="flex flex-col">
+                                    <span class="font-bold text-slate-800 leading-tight">${foundFood.nama} <span class="text-emerald-600 ml-1 bg-emerald-50 px-1.5 py-0.5 rounded text-[11px]">x${qty} Porsi</span></span>
+                                    <span class="text-slate-400 text-[11px] font-medium mt-0.5">⚖️ Estimasi Total Berat: ${Math.round(foundFood.berat * qty)}g</span>
+                                </div>
+                            </div>
+                            <span class="font-black text-slate-700 bg-slate-50 px-2 py-1 border border-slate-100 rounded-lg text-sm">${Math.round(calcCal)} kkal</span>
+                        `;
+                        summaryContainer.appendChild(summaryRow);
+                    }
+                });
+
+                // Pembulatan satu desimal untuk makro total agar rapi
+                totalCal = Math.round(totalCal);
+                totalProt = Math.round(totalProt * 10) / 10;
+                totalCarb = Math.round(totalCarb * 10) / 10;
+                totalFat = Math.round(totalFat * 10) / 10;
+
+                const totalRow = document.createElement('div');
+                totalRow.className = 'mt-3 pt-3 border-t border-emerald-200/60 flex justify-between items-center text-emerald-950 font-extrabold text-sm';
+                totalRow.innerHTML = `
+                    <span>Total Kuantitas Piring Sehat:</span>
+                    <span class="text-base text-right">${totalCal.toLocaleString('id-ID')} kkal <br class="sm:hidden"> <span class="text-xs font-medium text-emerald-800 sm:ml-1">(P: ${totalProt}g | K: ${totalCarb}g | L: ${totalFat}g)</span></span>
+                `;
+                summaryContainer.appendChild(totalRow);
+
+            } else {
+                summaryBox.classList.add('hidden');
+            }
+
+            document.getElementById('selected-calories').innerText = totalCal.toLocaleString('id-ID');
+            document.getElementById('selected-protein').innerText = totalProt + 'g';
+            document.getElementById('selected-carbs').innerText = totalCarb + 'g';
+            document.getElementById('selected-fat').innerText = totalFat + 'g';
+
+            const percentage = currentTargetCalories > 0 ? (totalCal / currentTargetCalories) * 100 : 0;
+            const progressBar = document.getElementById('status-progress-bar');
+            progressBar.style.width = Math.min(percentage, 100) + '%';
+
+            const statusBadge = document.getElementById('status-badge');
+            if (totalCal === 0) {
+                statusBadge.className = "px-3 py-1 text-xs font-black rounded-full uppercase bg-slate-100 text-slate-600 flex items-center gap-1";
+                statusBadge.innerHTML = "⚠️ Belum Diisi";
+                progressBar.className = "bg-slate-300 h-full rounded-full transition-all duration-300";
+            } else if (totalCal < currentTargetCalories * 0.90) {
+                statusBadge.className = "px-3 py-1 text-xs font-black rounded-full uppercase bg-yellow-100 text-yellow-800 flex items-center gap-1 animate-pulse";
+                statusBadge.innerHTML = "⚠️ Masih Kurang";
+                progressBar.className = "bg-yellow-500 h-full rounded-full transition-all duration-300";
+            } else if (totalCal > currentTargetCalories * 1.05) {
+                statusBadge.className = "px-3 py-1 text-xs font-black rounded-full uppercase bg-rose-100 text-rose-800 flex items-center gap-1";
+                statusBadge.innerHTML = "❌ Kelebihan Kalori";
+                progressBar.className = "bg-rose-500 h-full rounded-full transition-all duration-300";
+            } else {
+                statusBadge.className = "px-3 py-1 text-xs font-black rounded-full uppercase bg-emerald-100 text-emerald-800 flex items-center gap-1";
+                statusBadge.innerHTML = "✔ Seimbang! Sempurna";
+                progressBar.className = "bg-emerald-500 h-full rounded-full transition-all duration-300";
+            }
+        }
+
+        function openInfoModal() {
+            document.getElementById('info-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        function closeInfoModal() {
+            document.getElementById('info-modal').classList.add('hidden');
+            document.body.style.overflow = ''; 
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('info-modal');
+            if (event.target === modal) closeInfoModal();
+        }
+
+        // Jalankan aplikasi pertama kali saat halaman selesai dimuat
+        window.onload = function() {
+            loadFromLocalStorage(); 
+            calculateMacros(); 
+        };
+    </script>
+</body>
+</html>
